@@ -1,0 +1,617 @@
+//PROJECT 
+#define STB_IMAGE_IMPLEMENTATION
+#ifndef GL_GENERATE_MIPMAP
+#define GL_GENERATE_MIPMAP 0x8191
+#endif
+#include <iostream>
+#include <GL/freeglut.h>
+#include <windows.h>
+#include <cmath>
+
+#include "stb_image.h"
+using namespace std;
+
+// Global variables
+GLuint backgroundTexture;
+GLuint sunTexture;
+GLuint mercuryTexture;
+GLuint venusTexture;
+GLuint earthTexture;
+GLuint marsTexture;
+GLuint jupiterTexture;
+GLuint saturnTexture;
+GLuint uranusTexture;
+GLuint neptuneTexture;
+const int numPlanets = 8;
+float sunRadius = 8.0f;
+float lastMouseX = 400.0f, lastMouseY = 300.0f;
+bool isLeftButtonPressed = false;
+float planetRadius[numPlanets] = { 0.3f, 0.4f, 0.5f, 0.35f, 1.5f, 1.2f, 0.8f,0.7f };
+float orbitRadius[numPlanets] = { 10.0f, 13.0f, 15.0f, 18.0f, 20.0f, 23.0f, 26.0f, 28.0f };
+float planetSpeed[numPlanets] = { 0.45f, 0.39f, 0.32f, 0.28f, 0.21f, 0.17f, 0.1f, 0.05f };
+float planetAngle[numPlanets] = { 0.45f, 0.39f, 0.32f, 0.28f, 0.21f, 0.17f, 0.1f, 0.05f };
+float sunAngle = 0.0f;
+
+float cameraX = 0.0f, cameraY = 15.0f, cameraZ = 65.0f;
+
+// Moon variables
+float moonRadius[numPlanets] = { 0.1f, 0.15f, 0.2f, 0.12f, 0.4f, 0.3f, 0.25f, 0.2f };
+float moonOrbitRadius[numPlanets] = { 10.0f, 10.5f, 12.0f, 10.2f, 13.5f, 12.8f, 12.2f, 1.8f };
+float moonSpeed[numPlanets] = { 0.7f, 0.65f, 0.6f, 0.55f, 0.5f, 0.45f, 0.4f, 0.35f };
+float moonAngle[numPlanets] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+
+// Function to load texture from file using stb_image
+//Sun
+void loadTextureBackground(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &backgroundTexture);
+	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+//Sun
+void loadTextureSun(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &sunTexture);
+	glBindTexture(GL_TEXTURE_2D, sunTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+// Function to load texture from file using stb_image
+//Earth
+void loadTextureEarth(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &earthTexture);
+	glBindTexture(GL_TEXTURE_2D, earthTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+//Mercury
+void loadTextureMercury(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &mercuryTexture);
+	glBindTexture(GL_TEXTURE_2D, mercuryTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+
+//Venus
+void loadTextureVenus(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &venusTexture);
+	glBindTexture(GL_TEXTURE_2D, venusTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+
+//Mars
+void loadTextureMars(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &marsTexture);
+	glBindTexture(GL_TEXTURE_2D, marsTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+
+//Jupiter
+void loadTextureJupiter(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &jupiterTexture);
+	glBindTexture(GL_TEXTURE_2D, jupiterTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+
+//Staurn
+void loadTextureSaturn(const char* filename) {
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &saturnTexture);
+	glBindTexture(GL_TEXTURE_2D, saturnTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+
+//Neptune
+void loadTextureNeptune(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &neptuneTexture);
+	glBindTexture(GL_TEXTURE_2D, neptuneTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+//Uranus
+void loadTextureUranus(const char* filename) {
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+	if (!data) {
+		cerr << "Failed to load texture: " << filename << endl;
+		return;
+	}
+
+	cout << "Texture loaded successfully: " << filename << endl;
+	cout << "Width: " << width << ", Height: " << height << ", Channels: " << nrChannels << endl;
+
+	// Create and bind texture
+	glGenTextures(1, &uranusTexture);
+	glBindTexture(GL_TEXTURE_2D, uranusTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);// Generate mipmaps.
+	stbi_image_free(data);
+}
+void drawBackground() {
+	glDisable(GL_DEPTH_TEST); // Disable depth testing for the background
+	glDisable(GL_LIGHTING); // Disable lighting for the background
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, 1, 0, 1); // Set orthographic projection
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0f, 0.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0f, 1.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, 1.0f);
+	glEnd();
+	glDisable(GL_TEXTURE_2D); // Disable 2D texturing
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	glEnable(GL_DEPTH_TEST); // Re-enable depth testing
+	glEnable(GL_LIGHTING); // Re-enable lighting
+}
+
+void keyboard(unsigned char key, int x, int y) {
+	switch (key) {
+	case 'a':
+		cameraZ -= 0.2f;
+		break;
+	case 'd':
+		cameraZ += 0.2f;
+		break;
+	}
+	cout << "Current Z: " << cameraZ << endl;
+	glutPostRedisplay(); // Redraw the scene
+}
+
+
+void drawOrbit(float radius) {
+	glBegin(GL_LINE_LOOP);
+	for (int i = 0; i < 360; i++) {
+		float angle = i * 3.14f / 180.0f;
+		float x = radius * cos(angle);
+		float z = radius * sin(angle);
+		glVertex3f(x, 0.0f, z);
+	}
+	glEnd();
+}
+
+// Function to draw a sphere
+void drawSphere(float radius, int index) {
+	if (index == 0)
+	{
+		glEnable(GL_TEXTURE_2D);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D, mercuryTexture);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else if (index == 1)
+	{
+		glEnable(GL_TEXTURE_2D);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D, venusTexture);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else if (index == 2)
+	{
+		glEnable(GL_TEXTURE_2D);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D, earthTexture);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else if (index == 3)
+	{
+		glEnable(GL_TEXTURE_2D);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D, marsTexture);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else if (index == 4)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, jupiterTexture);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else if (index == 5)
+	{
+		glEnable(GL_TEXTURE_2D);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D, saturnTexture);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else if (index == 6)
+	{
+		glEnable(GL_TEXTURE_2D);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D, uranusTexture);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else if (index == 7)
+	{
+		glEnable(GL_TEXTURE_2D);
+		GLUquadric* quadric = gluNewQuadric();
+		gluQuadricTexture(quadric, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D, neptuneTexture);
+		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		gluSphere(quadric, radius, 50, 50);
+		gluDeleteQuadric(quadric);
+		glDisable(GL_TEXTURE_2D);
+	}
+}
+
+// Function to draw a sphere
+void drawSphereSun(float radius) {
+	// Save current material properties
+	GLfloat currentMatAmbient[4], currentMatDiffuse[4], currentMatSpecular[4], currentMatShininess[1], currentMatEmissive[4];
+	glGetMaterialfv(GL_FRONT, GL_AMBIENT, currentMatAmbient);
+	glGetMaterialfv(GL_FRONT, GL_DIFFUSE, currentMatDiffuse);
+	glGetMaterialfv(GL_FRONT, GL_SPECULAR, currentMatSpecular);
+	glGetMaterialfv(GL_FRONT, GL_SHININESS, currentMatShininess);
+	glGetMaterialfv(GL_FRONT, GL_EMISSION, currentMatEmissive);
+
+	// Set material properties for the glowing effect
+	GLfloat matAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	GLfloat matDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat matSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat matShininess[] = { 100.0f };
+	GLfloat matEmissive[] = { 1.0f, 1.0f, 1.0f, 1.0f };  // This makes the sun appear to glow
+
+	glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, matShininess);
+	glMaterialfv(GL_FRONT, GL_EMISSION, matEmissive);
+
+	// Draw the sun
+	glEnable(GL_TEXTURE_2D);
+	GLUquadric* quadric = gluNewQuadric();
+	gluQuadricTexture(quadric, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, sunTexture);
+	glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+	gluSphere(quadric, radius, 50, 50);
+	gluDeleteQuadric(quadric);
+	glDisable(GL_TEXTURE_2D);
+
+	// Restore previous material properties
+	glMaterialfv(GL_FRONT, GL_AMBIENT, currentMatAmbient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, currentMatDiffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, currentMatSpecular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, currentMatShininess);
+	glMaterialfv(GL_FRONT, GL_EMISSION, currentMatEmissive);
+}
+
+
+void setupLighting() {
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	GLfloat light_position[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat light_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+}
+// Function to draw the scene
+void display() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glLoadIdentity();
+	gluPerspective(50.0f, 1.0f, 6.0f, 100.0f);
+
+	// Set camera position
+	gluLookAt(cameraX, cameraY, cameraZ, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+	// Draw background
+	drawBackground();
+	setupLighting();
+
+	// Draw the sun
+	glPushMatrix();
+	glRotatef(sunAngle, 0.0f, 1.0f, 0.0f);
+	drawSphereSun(sunRadius);
+	glPopMatrix();
+
+	sunAngle += 1.0f;
+	if (sunAngle > 360.0f) {
+		sunAngle -= 360.0f;
+	}
+	// Removed the drawOrbit call because I don't want visible orbits
+	// Draw the planets
+	for (int i = 0; i < numPlanets; ++i) {
+		glPushMatrix();
+		glColor3f(0.5f, 0.5f, 0.5f);
+		glRotatef(planetAngle[i], 0.0f, 1.0f, 0.0f);
+		glTranslatef(orbitRadius[i], 0.0f, 0.0f);
+		drawSphere(planetRadius[i], i);
+		glPopMatrix();
+
+		planetAngle[i] += planetSpeed[i];
+		if (planetAngle[i] > 360.0f) {
+			planetAngle[i] -= 360.0f;
+		}
+	}
+
+	glutSwapBuffers();
+}
+
+void mouse(int button, int state, int x, int y) {
+	if (button == GLUT_LEFT_BUTTON) {
+		if (state == GLUT_DOWN) {
+			isLeftButtonPressed = true;
+			lastMouseX = x;
+			lastMouseY = y;
+		}
+		else {
+			isLeftButtonPressed = false;
+		}
+	}
+}
+void motion(int x, int y) {
+	if (isLeftButtonPressed) {
+		float deltaX = x - lastMouseX;
+		float deltaY = y - lastMouseY;
+
+		cameraX += deltaX * 0.01f;
+		cameraY -= deltaY * 0.01f;
+
+		lastMouseX = x;
+		lastMouseY = y;
+		lastMouseY = y;
+
+		glutPostRedisplay();
+	}
+}
+
+
+// Function to update the scene
+void update(int value) {
+	glutPostRedisplay(); // Redraw the scene
+	glutTimerFunc(16, update, 0); // Call update function in 16 milliseconds
+}
+
+int main(int argc, char** argv) {
+	// Initialize OpenGL and GLUT
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("Solar System");
+
+	// Enable depth testing
+	glEnable(GL_DEPTH_TEST);
+	// Load textures
+	loadTextureBackground("2k_stars_milky_way.jpg");
+	loadTextureSun("sun_texture.jpg");
+	loadTextureMercury("2k_mercury.jpg");
+	loadTextureVenus("2k_venus_surface.jpg");
+	loadTextureEarth("2k_earth_daymap.jpg");
+	loadTextureMars("2k_mars.jpg");
+	loadTextureJupiter("2k_jupiter.jpg");
+	loadTextureSaturn("2k_saturn.jpg");
+	loadTextureUranus("2k_uranus.jpg");
+	loadTextureNeptune("2k_neptune.jpg");
+
+	// Set callback functions
+	glutDisplayFunc(display);
+	glutTimerFunc(16, update, 0);
+	glutKeyboardFunc(keyboard);
+
+	glutMouseFunc(mouse);
+	glutMotionFunc(motion);
+
+	// Main loop
+	glutMainLoop();
+
+	return 0;
+}
